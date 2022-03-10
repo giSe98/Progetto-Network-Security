@@ -72,21 +72,18 @@ int main (int argc, char** argv)
   Ptr<Node> n0 = CreateObject<Node> ();
   Ptr<Node> r = CreateObject<Node> ();
   Ptr<Node> n1 = CreateObject<Node> ();
-//////////////
-Ptr<Node> n2 = CreateObject<Node> ();
-Ptr<Node> n3 = CreateObject<Node> ();
-//Ptr<Node> n4 = CreateObject<Node> ();
-//Ptr<Node> n5 = CreateObject<Node> ();
-//Ptr<Node> n6 = CreateObject<Node> ();
-///////////
+  /*1*/  
+  Ptr<Node> n2 = CreateObject<Node> ();
+  Ptr<Node> n3 = CreateObject<Node> ();
+  /**/
   
 
   NodeContainer net1 (n0, r);
   NodeContainer net2 (r, n1);
-//////
- NodeContainer net3 (r, n2);
- NodeContainer net4 (n3, r);
-////
+  /*2*/
+  NodeContainer net3 (r, n2);
+  NodeContainer net4 (n3, r);
+  /**/
   NodeContainer all (n0, r, n1, n2, n3);
 
 
@@ -102,24 +99,20 @@ Ptr<Node> n3 = CreateObject<Node> ();
   csma.SetDeviceAttribute ("Mtu", UintegerValue (150));
   NetDeviceContainer d1 = csma.Install (net1);
 
-///
+  /*3*/
   NetDeviceContainer d3 = csma.Install (net3);
-
   NetDeviceContainer d4 = csma.Install (net4);
-
-///
+  /**/
 
   SixLowPanHelper sixlowpan;
   sixlowpan.SetDeviceAttribute ("ForceEtherType", BooleanValue (true) );
   NetDeviceContainer six1 = sixlowpan.Install (d1);
 
-/////
- NetDeviceContainer six2 = sixlowpan.Install (d2);
- NetDeviceContainer six3 = sixlowpan.Install (d3);
- NetDeviceContainer six4 = sixlowpan.Install (d4);
-
-
-//////
+  /*4*/
+  NetDeviceContainer six2 = sixlowpan.Install (d2);
+  NetDeviceContainer six3 = sixlowpan.Install (d3);
+  NetDeviceContainer six4 = sixlowpan.Install (d4);
+  /**/
 
   NS_LOG_INFO ("Create networks and assign IPv6 Addresses.");
   Ipv6AddressHelper ipv6;
@@ -133,18 +126,17 @@ Ptr<Node> n3 = CreateObject<Node> ();
   i2.SetForwarding (0, true);
   i2.SetDefaultRouteInAllNodes (0);
 
-
-///////
-ipv6.SetBase (Ipv6Address ("2001:3::"), Ipv6Prefix (64));
+  /*5*/
+  ipv6.SetBase (Ipv6Address ("2001:3::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i3 = ipv6.Assign (six3);
   i3.SetForwarding (0, true);
   i3.SetDefaultRouteInAllNodes (0);
 
-ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
+  ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i4 = ipv6.Assign (six4);
-  i4.SetForwarding (0, true);
+  i4.SetForwarding (0, false);
   i4.SetDefaultRouteInAllNodes (0);
-///////
+  /**/
 
 
   /* Create a Ping6 application to send ICMPv6 echo request from n0 to n1 via r */
@@ -160,12 +152,24 @@ ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
   ping6.SetAttribute ("Interval", TimeValue (interPacketInterval));
   ping6.SetAttribute ("PacketSize", UintegerValue (packetSize));
 
-
+  /*6*/
+  Ping6Helper ping7;
+  ping7.SetLocal (i3.GetAddress (0, 0));
+  ping7.SetRemote (i4.GetAddress (1, 0));
+  ping7.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
+  ping7.SetAttribute ("Interval", TimeValue (interPacketInterval));
+  ping7.SetAttribute ("PacketSize", UintegerValue (packetSize));
+  /**/
   ApplicationContainer apps = ping6.Install (net1.Get (0));
-
+  /*7*/
+  ApplicationContainer apps2 = ping7.Install (net3.Get (0));
+  /**/
   apps.Start (Seconds (5.0));
   apps.Stop (Seconds (15.0));
-
+  /*8*/
+  apps2.Start (Seconds (5.0));
+  apps2.Stop (Seconds (11.0));
+  /**/
 
 /*
 UdpServerHelper server (4000);
@@ -180,7 +184,7 @@ apps.Start(Seconds(2.0));
 apps.Stop(Seconds(15.0));
 
   */
- AsciiTraceHelper ascii;
+  AsciiTraceHelper ascii;
   csma.EnableAsciiAll (ascii.CreateFileStream ("example-sixlowpan.tr"));
   csma.EnablePcapAll (std::string ("example-sixlowpan"), true);
 
@@ -189,5 +193,5 @@ apps.Stop(Seconds(15.0));
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");
-}
 
+}
