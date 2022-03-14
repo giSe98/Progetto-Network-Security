@@ -67,67 +67,40 @@ int main (int argc, char** argv)
   Packet::EnableChecking ();
 
   NS_LOG_INFO ("Create nodes.");
-  /*Ptr<Node> n0 = CreateObject<Node> ();
-  Ptr<Node> r = CreateObject<Node> ();
-  Ptr<Node> n1 = CreateObject<Node> ();
-  Ptr<Node> n2 = CreateObject<Node> ();
-  Ptr<Node> n3 = CreateObject<Node> ();
-*/
   Ptr<Node> n1 = CreateObject<Node> ();
   Ptr<Node> n2 = CreateObject<Node> ();
   Ptr<Node> n3 = CreateObject<Node> ();
   Ptr<Node> n5 = CreateObject<Node> ();
-  /*Ptr<Node> n4 = CreateObject<Node> ();
+  Ptr<Node> n4 = CreateObject<Node> ();
   Ptr<Node> n6 = CreateObject<Node> ();
   Ptr<Node> n7 = CreateObject<Node> ();
   Ptr<Node> n8 = CreateObject<Node> ();
-  */Ptr<Node> g = CreateObject<Node> ();
+  Ptr<Node> g = CreateObject<Node> (); //gateway è il nostro router, gli altri sono nodi terminali
 
-  /*NodeContainer net1 (n0, r);
-  NodeContainer net2 (r, n1);
-  NodeContainer net3 (n2, r);
-  NodeContainer net4 (r, n3);
-  NodeContainer all (n0, r, n1,n2,n3);
-*/
   NodeContainer net1(n1, g);
   NodeContainer net2(g, n2);
   NodeContainer net3(n3, g);
   NodeContainer net5(g, n5);
-  /*NodeContainer net4(n4, g);
+  NodeContainer net4(n4, g);
   NodeContainer net6(g, n6);
   NodeContainer net7(n7, g);
   NodeContainer net8(g, n8);
-*/
-  //Wrapper per node container
-  /*NodeContainer rete12(net1, net2, g);
-  NodeContainer rete35(net3, net5, g);
-  NodeContainer rete46(net4, net6,g);
-  NodeContainer rete78(net7, net8,g);
-*/
 
- NodeContainer all(n1, n2, n3, n5, g);
-  /*NodeContainer all(g);
-  all.Add(n1);
+  NodeContainer all(n1);
   all.Add(n2);
   all.Add(n3);
   all.Add(n4);
   all.Add(n5);
-  all.Add(n6);*/
+  all.Add(n6);
+  all.Add(n7);
+  all.Add(n8);
+  all.Add(g);
 
   //NodeContainer all(rete12, rete35, rete46, rete78, g);
   NS_LOG_INFO ("Create IPv6 Internet Stack");
   InternetStackHelper internetv6;
   internetv6.Install (all);
-  /*internetv6.Install (net1);
-  internetv6.Install (net2);
-  internetv6.Install (net3);
-  internetv6.Install (net4);
-  internetv6.Install (net5);
-  internetv6.Install (net6);
-  internetv6.Install (net7);
-
-  internetv6.Install (net8);
-*/
+  
   NS_LOG_INFO ("Create channels.");
   CsmaHelper csma;
   csma.SetChannelAttribute ("DataRate", DataRateValue (5000000));
@@ -138,29 +111,30 @@ int main (int argc, char** argv)
   NetDeviceContainer d2 = csma.Install (net2);
   NetDeviceContainer d3 = csma.Install (net3);
   NetDeviceContainer d5 = csma.Install (net5);
- /* NetDeviceContainer d4 = csma.Install (net4);
+  NetDeviceContainer d4 = csma.Install (net4);
   NetDeviceContainer d6 = csma.Install (net6);
   NetDeviceContainer d7 = csma.Install (net7);
   NetDeviceContainer d8 = csma.Install (net8);
-*/
+
+
   SixLowPanHelper sixlowpan;
   sixlowpan.SetDeviceAttribute ("ForceEtherType", BooleanValue (true) );
   NetDeviceContainer six1 = sixlowpan.Install (d1);
   NetDeviceContainer six2 = sixlowpan.Install (d2);
   NetDeviceContainer six3 = sixlowpan.Install (d3);
   NetDeviceContainer six5 = sixlowpan.Install (d5);
-  /*NetDeviceContainer six4 = sixlowpan.Install (d4);
+  NetDeviceContainer six4 = sixlowpan.Install (d4);
   NetDeviceContainer six6 = sixlowpan.Install (d6);
   NetDeviceContainer six7 = sixlowpan.Install (d7);
   NetDeviceContainer six8 = sixlowpan.Install (d8);
-*/
+
 
   NS_LOG_INFO ("Create networks and assign IPv6 Addresses.");
   Ipv6AddressHelper ipv6;
   ipv6.SetBase (Ipv6Address ("2001:1::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i1 = ipv6.Assign (six1);
-  i1.SetForwarding (1, true);
-  i1.SetDefaultRouteInAllNodes (1);
+  i1.SetForwarding (1, true); // i nodi che vanno verso il router 
+  i1.SetDefaultRouteInAllNodes (1); // vogliono a 1 , gli altri a zero
 
   ipv6.SetBase (Ipv6Address ("2001:2::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i2 = ipv6.Assign (six2);
@@ -172,32 +146,32 @@ int main (int argc, char** argv)
   i3.SetForwarding (1, true);
   i3.SetDefaultRouteInAllNodes (1);
  
-  ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
+  ipv6.SetBase (Ipv6Address ("2001:5::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i5 = ipv6.Assign (six5);
   i5.SetForwarding (0, true);
   i5.SetDefaultRouteInAllNodes (0);
 
- /* ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
+  ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i4 = ipv6.Assign (six4);
   i4.SetForwarding (1, true);
   i4.SetDefaultRouteInAllNodes (1);
   
-  ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
+  ipv6.SetBase (Ipv6Address ("2001:6::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i6 = ipv6.Assign (six6);
   i6.SetForwarding (0, true);
   i6.SetDefaultRouteInAllNodes (0);
 
-  ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
+  ipv6.SetBase (Ipv6Address ("2001:7::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i7 = ipv6.Assign (six7);
-  i7.SetForwarding (0, true);
-  i7.SetDefaultRouteInAllNodes (0);
+  i7.SetForwarding (1, true);
+  i7.SetDefaultRouteInAllNodes (1);
 
-  ipv6.SetBase (Ipv6Address ("2001:4::"), Ipv6Prefix (64));
+  ipv6.SetBase (Ipv6Address ("2001:8::"), Ipv6Prefix (64));
   Ipv6InterfaceContainer i8 = ipv6.Assign (six8);
   i8.SetForwarding (0, true);
   i8.SetDefaultRouteInAllNodes (0);
 
-  */
+  
 
 
   
@@ -206,46 +180,7 @@ int main (int argc, char** argv)
   uint32_t packetSize = 200;
   uint32_t maxPacketCount = 50;
   Time interPacketInterval = Seconds (1.);
-  /*Ping6Helper ping6;
-
-  ping6.SetLocal (i1.GetAddress (0, 1));
-  ping6.SetRemote (i2.GetAddress (1, 1));
-
-  ping6.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
-  ping6.SetAttribute ("Interval", TimeValue (interPacketInterval));
-  ping6.SetAttribute ("PacketSize", UintegerValue (packetSize));
-  ApplicationContainer apps = ping6.Install (net1.Get (0));
-
-  Ping6Helper ping7;
-
-  ping7.SetLocal (i2.GetAddress (0, 1));
-  ping7.SetRemote (i3.GetAddress (1, 1));
-
-  ping7.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
-  ping7.SetAttribute ("Interval", TimeValue (interPacketInterval));
-  ping7.SetAttribute ("PacketSize", UintegerValue (packetSize));
-  ApplicationContainer apps2 = ping7.Install (net2.Get (0));
-
-  Ping6Helper ping8;
-
-  ping8.SetLocal (i1.GetAddress (0, 1));
-  ping8.SetRemote (i4.GetAddress (1, 1));
-
-  ping8.SetAttribute ("MaxPackets", UintegerValue (maxPacketCount));
-  ping8.SetAttribute ("Interval", TimeValue (interPacketInterval));
-  ping8.SetAttribute ("PacketSize", UintegerValue (packetSize));
-  ApplicationContainer apps3 = ping8.Install (net1.Get (0));
-
-
-
-  apps.Start (Seconds (5.0));
-  apps.Stop (Seconds (14.0));
-
-  apps2.Start (Seconds (15.0));
-  apps2.Stop (Seconds (30.0));
-  apps3.Start (Seconds (31.0));
-  apps3.Stop (Seconds (40.0));
-*/
+  
 
   Ping6Helper p12;
 
@@ -271,7 +206,7 @@ int main (int argc, char** argv)
   a35.Start (Seconds (5));
   a35.Stop (Seconds (7));
 
-
+//questo è di più
  Ping6Helper p15;
 
   p15.SetLocal (i1.GetAddress (0, 1));
@@ -283,7 +218,8 @@ int main (int argc, char** argv)
   ApplicationContainer a15 = p15.Install (net1.Get (0));
   a15.Start (Seconds (8));
   a15.Stop (Seconds (11));
-/*  Ping6Helper p46;
+
+  Ping6Helper p46;
 
   p46.SetLocal (i4.GetAddress (0, 1));
   p46.SetRemote (i6.GetAddress (1, 1));
@@ -292,8 +228,10 @@ int main (int argc, char** argv)
   p46.SetAttribute ("Interval", TimeValue (interPacketInterval));
   p46.SetAttribute ("PacketSize", UintegerValue (packetSize));
   ApplicationContainer a46 = p46.Install (net4.Get (0));
-  a46.Start (Seconds (8));
-  a46.Stop (Seconds (10));
+  a46.Start (Seconds (5)); //test due insieme
+  a46.Stop (Seconds (7));
+  /*a46.Start (Seconds (11));
+  a46.Stop (Seconds (12));*/ 
 
   Ping6Helper p78;
 
@@ -304,9 +242,9 @@ int main (int argc, char** argv)
   p78.SetAttribute ("Interval", TimeValue (interPacketInterval));
   p78.SetAttribute ("PacketSize", UintegerValue (packetSize));
   ApplicationContainer a78 = p78.Install (net7.Get (0));
-  a78.Start (Seconds (11));
-  a78.Stop (Seconds (13));
-*/
+  a78.Start (Seconds (13));
+  a78.Stop (Seconds (15));
+
 
 
   AsciiTraceHelper ascii;
