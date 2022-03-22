@@ -1,3 +1,5 @@
+Guida utile -> https://www.napier.ac.uk/~/media/worktribe/output-299955/cooja-simulator-manual.pdf
+
 git conkiti -> https://github.com/contiki-ng/contiki-ng
 wiki conkiti -> https://github.com/contiki-ng/contiki-ng/wiki
 
