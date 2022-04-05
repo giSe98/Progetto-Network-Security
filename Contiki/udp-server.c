@@ -31,9 +31,11 @@
 #include "net/routing/routing.h"
 #include "net/netstack.h"
 #include "net/ipv6/simple-udp.h"
+#include "os/net/ipv6/uip.h" //aggiunta
 #include "pt.h"
 #include "sys/log.h"
 #include "subprocess.h"
+#include "os/net/mac/mac.h"
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
@@ -93,10 +95,16 @@ static void check_packet(struct simple_udp_connection *c,
             {
               conta[j]+=1;
               trovato=1;
-              
               if (rate[j]<0.0005){
                 udp_rx_callback(c, sender_addr, sender_port, receiver_addr, receiver_port, data, datalen);
               }
+              /*if (rate[j] > 0.0005)
+              {
+               NETSTACK_ROUTING.link_callback(linkaddr_node_addr(sender_addr), 0, 10);
+                //NETSTACK_MAC.input();
+                
+              }
+            */
             }
             
           }
@@ -173,9 +181,9 @@ PROCESS_THREAD(master, ev, data){
     for (int j = 0; j < i; j++)
     {
       rate[j]=(float)conta[j]/INTERVALLO;
-      LOG_INFO_("%f da ", rate[j]);
-      LOG_INFO_6ADDR(&ip[j]);
-      LOG_INFO_("\n");
+     // LOG_INFO_("%f da ", rate[j]);
+      //LOG_INFO_6ADDR(&ip[j]);
+       //LOG_INFO_("\n");
     }
     for (int j = 0; j < i; j++)
     {
