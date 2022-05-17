@@ -52,6 +52,8 @@
 #include <limits.h>
 #include "uip.h"
 #include "uip-debug.h"
+#include "rpl-neighbor.h"
+//#include "rpl-types.h"
 /* Log configuration */
 #include "sys/log.h"
 //#define LOG_MODULE "RPL"
@@ -59,16 +61,27 @@
 #define LOG_MODULE "App"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
+
 /*---------------------------------------------------------------------------*/
 #define RPL_DIO_GROUNDED                 0x80
 #define RPL_DIO_MOP_SHIFT                3
 #define RPL_DIO_MOP_MASK                 0x38
 #define RPL_DIO_PREFERENCE_MASK          0x07
 
+#define K 0.3
 /*---------------------------------------------------------------------------*/
 static void dis_input(void);
 static void dio_input(void);
 static void dao_input(void);
+
+// static rpl_rank_t newRank= 170;
+// static uip_ipaddr_t ip[5];
+// static float rate[5]={0,0,0,0,0};
+// static float media;
+// static rpl_rank_t max, med;
+// static rpl_rank_t soglia;
+
+
 
 /*---------------------------------------------------------------------------*/
 /* Initialize RPL ICMPv6 message handlers */
@@ -80,6 +93,8 @@ UIP_ICMP6_HANDLER(dao_handler, ICMP6_RPL, RPL_CODE_DAO, dao_input);
 static void dao_ack_input(void);
 UIP_ICMP6_HANDLER(dao_ack_handler, ICMP6_RPL, RPL_CODE_DAO_ACK, dao_ack_input);
 #endif /* RPL_WITH_DAO_ACK */
+
+
 
 /*---------------------------------------------------------------------------*/
 static uint32_t
@@ -193,7 +208,6 @@ dio_input(void)
   dio.ocp = RPL_OF_OCP;
   dio.default_lifetime = RPL_DEFAULT_LIFETIME;
   dio.lifetime_unit = RPL_DEFAULT_LIFETIME_UNIT;
-
   uip_ipaddr_copy(&from, &UIP_IP_BUF->srcipaddr);
 
   buffer_length = uip_len - uip_l3_icmp_hdr_len;
@@ -320,13 +334,43 @@ dio_input(void)
   LOG_INFO_6ADDR(&from);
   LOG_INFO_(", instance_id %u, DAG ID ", (unsigned)dio.instance_id);
   LOG_INFO_6ADDR(&dio.dag_id);
-  LOG_INFO_(", version %u, dtsn %u, rank %u\n",
+  LOG_INFO_(", version %u, dtsn %u, rank %u  ", //tolto ritorno a capo
          (unsigned)dio.version,
          (unsigned)dio.dtsn,
          (unsigned)dio.rank);
 
-  rpl_process_dio(&from, &dio);
+  rpl_nbr_t *nbr =rpl_parent_get_from_ipaddr(&UIP_IP_BUF->srcipaddr);
+  
+  rpl_rank_t somma=0, max=0;
+  int  count=0;
+  
+  while (nbr!= NULL){
+    rpl_rank_t t= rpl_neighbor_rank_via_nbr(nbr);
+    somma =somma+t;
+    count++;
+    if(t>max)
+      max=t;
+    nbr = nbr_table_next(rpl_neighbors, nbr);
+  }
 
+  if(count!=0){
+    rpl_rank_t med= (rpl_rank_t) somma/count;
+    
+    rpl_rank_t soglia=(rpl_rank_t) max* (1/count -K) + med;
+    LOG_INFO(" soglia: %d", soglia);
+    if(dio.rank >= soglia){
+      LOG_INFO("  SCARTO\n");
+      goto discard;
+    }
+  }
+ // rmax * (1/n -K) +m/n
+ //m somma dei rank , n numerod ei vicini
+  //if(legit())
+    rpl_process_dio(&from, &dio);
+    LOG_INFO(" Lo Prendo\n");
+  //else
+    //LOG_INFO("SCARTO");
+    // goto discard;
 discard:
   uipbuf_clear();
 }
@@ -389,6 +433,34 @@ rpl_icmp6_dio_output(uip_ipaddr_t *uc_addr)
       {
         LOG_INFO("Successo 2 ");
         curr_instance.dag.rank=1000;
+        //curr_instance.dag.rank=1000;
+        // long tmp= curr_instance.dag.rank+(curr_instance.dag.rank *0,8);
+        // if(tmp < 65535)
+        // //curr_instance.dag.rank= curr_instance.dag.rank+(curr_instance.dag.rank *0,8);
+        //   curr_instance.dag.rank=tmp;
+        // else
+        //   curr_instance.dag.rank=65535;
+      /*  
+      long tmp= newRank + newRank * 0.7;
+      long a= 65535;
+      if (tmp < a)
+      {
+        newRank=newRank+newRank*0.7;
+      }
+
+      curr_instance.dag.rank=newRank;
+        varibaile*//*
+
+        if(new_rank != 65535) {
+          long tmp = new_rank + new_rank * 0.8;
+          if(tmp < 65535)
+            new_rank = tmp;
+          else
+            new_rank = 65535;
+        }
+*/
+  //      curr_instance.dag.rank = new_rank;
+        
       }
       
     }
