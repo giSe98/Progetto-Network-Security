@@ -5,7 +5,7 @@ usage() {
 	echo "      -c to have complex scenario (default is base)"
 	echo "      -A attack (DOS, RANK, WORMHOLE, FRAGMENT)"
 	echo "      -M mitigation (DOS, RANK, WORMHOLE, FRAGMENT)"
-	echo "      -S number of scenario (for RANK with opt c: [0,3])"
+	echo "      -S number of scenario (for RANK with opt c: [0,2])"
 	exit -1;
 }
 
@@ -48,7 +48,6 @@ if [[ $scenario -lt 0 || $complex == 0 || $attack != "RANK" && $scenario -gt 2 ]
 	exit -1;	
 fi
 
-<<comm
 clean
 
 if [ $complex == 1 ]; then
@@ -85,6 +84,5 @@ elif [ $mitigation == "FRAGMENT" ]; then
 elif [ $mitigation == "WARMHOLE" ]; then
 	echo "[REDACTED]"
 fi
-comm
 
-#docker run --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 --mount type=bind,source=$CNG_PATH,destination=/home/user/contiki-ng -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev/bus/usb:/dev/bus/usb -ti contiker/contiki-ng cooja
+docker run --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 --mount type=bind,source=$CNG_PATH,destination=/home/user/contiki-ng -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev/bus/usb:/dev/bus/usb -ti contiker/contiki-ng cooja
