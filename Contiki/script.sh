@@ -11,6 +11,7 @@ usage() {
 
 clean() {
 	cp ~/attacchi/Backup/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-lite/
+    cp ~/attacchi/Backup/rpl-dag.c ~/contiki-ng/os/net/routing/rpl-clssic/
 	cp ~/attacchi/Backup/client.c ~/contiki-ng/examples/rpl-udp/
 	cp ~/attacchi/Backup/server.c ~/contiki-ng/examples/rpl-udp/
 }
@@ -41,7 +42,7 @@ done
 if [[ $scenario -lt 0 || $complex == 0 || $attack != "RANK" && $scenario -gt 2 ]]; then 
 	echo "Invalid option"
 	echo "The scenario must be:"
-	echo "	- for rank attack: between [0,2] and the -c option must be present, where:"
+	echo "	- for rank and wormhole attack: between [0,2] and the -c option must be present, where:"
 	echo "		1) scenario 0 is equal to "
 	echo "		2) scenario 1 is equal to "
 	echo "		3) scenario 2 is equal to "
@@ -70,9 +71,10 @@ elif [ $attack == "RANK" ]; then
 elif [ $attack == "FRAGMENT" ]; then
 	echo "[REDACTED]"
 	# FILL
-elif [ $attack == "WARMHOLE" ]; then
-	echo "[REDACTED]"
-	# FILL
+elif [ $attack == "WORMHOLE" ]; then
+    cp Wormhole/wormhole-a.c ~/contiki-ng/examples/rpl-udp
+    cp Wormhole/wormhole-b.c ~/contiki-ng/examples/rpl-udp
+    cp Wormhole/attacco/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-classic
 fi
 
 if [ $mitigation == "DOS" ]; then
@@ -81,8 +83,8 @@ elif [ $mitigation == "RANK" ]; then
 	cp mitigazione/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-lite
 elif [ $mitigation == "FRAGMENT" ]; then
 	echo "[REDACTED]"
-elif [ $mitigation == "WARMHOLE" ]; then
-	echo "[REDACTED]"
+elif [ $mitigation == "WORMHOLE" ]; then
+	cp Wormhole/mitigazione/rpl-dag.c ~/contiki-ng/os/net/routing/rpl-classic
 fi
 
 docker run --privileged --sysctl net.ipv6.conf.all.disable_ipv6=0 --mount type=bind,source=$CNG_PATH,destination=/home/user/contiki-ng -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev/bus/usb:/dev/bus/usb -ti contiker/contiki-ng cooja
