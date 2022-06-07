@@ -11,7 +11,8 @@ usage() {
 
 clean() {
 	cp ~/attacchi/Backup/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-lite/
-    cp ~/attacchi/Backup/rpl-dag.c ~/contiki-ng/os/net/routing/rpl-clssic/
+	cp ~/attacchi/Backup/rpl-dag.c ~/contiki-ng/os/net/routing/rpl-classic/
+	cp ~/attacchi/Backup/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-classic/
 	cp ~/attacchi/Backup/client.c ~/contiki-ng/examples/rpl-udp/
 	cp ~/attacchi/Backup/server.c ~/contiki-ng/examples/rpl-udp/
 }
@@ -42,7 +43,7 @@ done
 if [[ $scenario -lt 0 || $complex == 0 || $attack != "RANK" && $scenario -gt 2 ]]; then 
 	echo "Invalid option"
 	echo "The scenario must be:"
-	echo "	- for rank and wormhole attack: between [0,2] and the -c option must be present, where:"
+	echo "	- for rank: between [0,2] and the -c option must be present, where:"
 	echo "		1) scenario 0 is equal to "
 	echo "		2) scenario 1 is equal to "
 	echo "		3) scenario 2 is equal to "
@@ -72,9 +73,11 @@ elif [ $attack == "FRAGMENT" ]; then
 	echo "[REDACTED]"
 	# FILL
 elif [ $attack == "WORMHOLE" ]; then
-    cp Wormhole/wormhole-a.c ~/contiki-ng/examples/rpl-udp
-    cp Wormhole/wormhole-b.c ~/contiki-ng/examples/rpl-udp
-    cp Wormhole/attacco/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-classic
+	mkdir ~/contiki-ng/examples/rpl-udp
+	mkdir ~/contiki-ng/examples/rpl-udp/ipv6
+	cp Wormhole/wormhole-a.c ~/contiki-ng/examples/rpl-udp/ipv6
+	cp Wormhole/wormhole-b.c ~/contiki-ng/examples/rpl-udp/ipv6
+	cp Wormhole/attacco/rpl-icmp6.c ~/contiki-ng/os/net/routing/rpl-classic
 fi
 
 if [ $mitigation == "DOS" ]; then
